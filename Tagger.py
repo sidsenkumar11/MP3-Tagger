@@ -56,9 +56,9 @@ class App(QtGui.QMainWindow, design.Ui_MainWindow):
         	"Pick a folder")
         if directory:
             for file_name in os.listdir(directory):
-                metadata_popup
-	def metadata_popup():
-
+                metadata_popup()
+    def metadata_popup():
+        pass
 if __name__=='__main__':
 	# GUI Code - Priya
 	app = QtGui.QApplication(sys.argv)
