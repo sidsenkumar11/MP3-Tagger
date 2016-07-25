@@ -1,11 +1,15 @@
 import pygn
 import json
+import sys
+import design
+import os
+from PyQt4 import QtCore, QtGui
 
 clientID = '420737233-ABB8789B14C3A2BAE6730A0EEE59B3D6'
 userID = '94671866235528590-B0AC2AB3FE6629CD0B956F996F3D926A'
 
 # Rachel
-def read_files_in_current_directory():
+def read_files_in_current_directory(dir_name):
 
 	# Return list of MP3 Files in current directory
 	return None
@@ -41,7 +45,24 @@ def generate_playlists(option):
 	# Doesn't need to return anything
 	pass # Remove this line when the method is implemented
 
+class App(QtGui.QMainWindow, design.Ui_MainWindow):
+    def __init__(self, parent=None):
+        super(App, self).__init__(parent)
+        self.setupUi(self)
+        self.select_dir.clicked.connect(self.browse_folder)
+    def browse_folder(self):
+        self.dir_list.clear()
+        directory = QtGui.QFileDialog.getExistingDirectory(self,
+        	"Pick a folder")
+        if directory:
+            for file_name in os.listdir(directory):
+                metadata_popup
+	def metadata_popup():
+
 if __name__=='__main__':
 	# GUI Code - Priya
+	app = QtGui.QApplication(sys.argv)
+	form = App()
+	form.show()
+	app.exec_()
 	print(get_song_metadata('Lose Yourself', 'Eminem')['album_art_url'])
-
