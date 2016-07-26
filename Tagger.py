@@ -3,7 +3,11 @@ import json
 import sys
 import design
 import os
+from mutagen.mp3 import MP3
+from mutagen.easyid3 import EasyID3
+import mutagen.id3
 from PyQt4 import QtCore, QtGui
+import pprint as pp
 
 clientID = '420737233-ABB8789B14C3A2BAE6730A0EEE59B3D6'
 userID = '94671866235528590-B0AC2AB3FE6629CD0B956F996F3D926A'
@@ -25,18 +29,20 @@ def get_song_metadata(song_name, artist_name):
     # print(json.dumps(result, sort_keys=True, indent=4))
     return metadata
 
-# Rahul
-def parse_metadata_from_json(metadata):
-    ## UPDATE: turns out this function isn't really needed anymore b/c our API is pretty nice.
-    # Take in dict created by the API from querying the track name and artist name
-    # Get relevant pieces of information that go into MP3 files and return dict containing mapping
-    return None
-
 # Daiven
-def write_metadata_to_file(metadata, MP3_file):
+def write_metadata_to_file(metadict, filename):
+    mp3file = MP3(filename, ID3=EasyID3)
+    mp3file['Title'] = metadict["track_title"]
+    mp3file['Artist']= metadict["album_artist_name"]
+    mp3file['Album']= metadict["album_title"]
+    mp3file['TrackNumber'] = metadict["track_number"]
+    mp3file['Genre'] = metadict['genre']['1']['TEXT'] # TODO: Write multiple genres
+    mp3file['Date'] = metadict["album_year"]
+    mp3file.save()
 
-    # Doesn't need to return anything
-    pass # Remove this line when the method is implemented
+def read_metadata_from_file(filename):
+    audio = MP3(filename, ID3=EasyID3)
+    pp.pprint(audio)
 
 # Whoever
 def generate_playlists(option):
@@ -56,19 +62,32 @@ class App(QtGui.QMainWindow, design.Ui_MainWindow):
         	"Pick a folder")
         if directory:
             for file_name in os.listdir(directory):
-                #popup appears some way somehow idk someone help
-                #enter s = song information
-                #enter a = artist information
-                #line below writes metadata
-                #write_metadata_to_file(get_song_metadata(s, a), file_name)
-                #after writing, add filename to list of tagged songs
-                self.dir_list.addItem(file_name)
-
+                self.popup(file_name)
+            #call gen_playlist
+    def popup(self,fname):
+        #popup appears some way somehow idk someone help
+        #text: "Enter information for <fname>"
+        #enter s = song information in textbox
+        #enter a = artist information in textbox
+        #on click "Tag Song", line below writes metadata
+        #write_metadata_to_file(get_song_metadata(s, a), fname)
+            #should we have a popup for if it can't find the info?
+        #after writing, add filename to list of tagged songs w the line below:
+        #<listWidget>.addItem(fname)
+    def gen_playlist(self):
+        choice = QtGui.QMessageBox.question(self, 'Generate playlist?',
+                                            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+        if choice == QtGui.QMessageBox.Yes:
+            sys.exit()
+        else:
+            #select attribute to generate playlist by
+            pass
 if __name__=='__main__':
     # GUI Code - Priya
     app = QtGui.QApplication(sys.argv)
     form = App()
     form.show()
     app.exec_()
-
-    print(get_song_metadata('Lose Yourself', 'Eminem')['album_art_url'])
+    # song_metadata = get_song_metadata("NYC", 'Kevin Rudolph')
+    # write_metadata_to_file(song_metadata, "test.mp3")
+    read_metadata_from_file("test.mp3")
