@@ -25,7 +25,6 @@ def get_song_metadata(song_name, artist_name):
     return pygn.search(clientID=clientID, userID=userID, artist=artist_name, track=song_name)
 
 def write_metadata_to_file(metadict, filename):
-
     mp3file = MP3(filename, ID3=EasyID3)
     mp3file['Title'] = metadict["track_title"]
     mp3file['Artist']= metadict["album_artist_name"]
@@ -74,20 +73,32 @@ class App(QtGui.QMainWindow, design.Ui_MainWindow):
     def browse_folder(self):
         self.dir_list.clear()
         directory = QtGui.QFileDialog.getExistingDirectory(self,
-            "Pick a folder")
+        	"Pick a folder")
         if directory:
             for file_name in os.listdir(directory):
-                metadata_popup
-    def metadata_popup():
-        pass
-
+                self.popup(file_name)
+            #call gen_playlist
+    def popup(self,fname):
+        #popup appears some way somehow idk someone help
+        #text: "Enter information for <fname>"
+        #enter s = song information in textbox
+        #enter a = artist information in textbox
+        #on click "Tag Song", line below writes metadata
+        #write_metadata_to_file(get_song_metadata(s, a), fname)
+            #should we have a popup for if it can't find the info?
+        #after writing, add filename to list of tagged songs w the line below:
+        #<listWidget>.addItem(fname)
+    def gen_playlist(self):
+        choice = QtGui.QMessageBox.question(self, 'Generate playlist?',
+                                            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+        if choice == QtGui.QMessageBox.Yes:
+            sys.exit()
+        else:
+            #select attribute to generate playlist by
+            pass
 if __name__=='__main__':
-    # GUI Code - Priya
-    # app = QtGui.QApplication(sys.argv)
-    # form = App()
-    # form.show()
-    # app.exec_()
 
+    # Main Functionality
     songs = read_files_in_current_directory()
     for song in songs:
         read_metadata_from_file(song)
@@ -101,3 +112,10 @@ if __name__=='__main__':
     # Possible options: 'Genre', 'Artist', 'Album', 'Date'
     playlist_option = input("How would you like to sort your music into playlists?\nEnter Genre, Artist, Album, or Date: ")
     generate_playlists(playlist_option)
+
+    # GUI Work
+    # app = QtGui.QApplication(sys.argv)
+    # form = App()
+    # form.show()
+    # app.exec_()
+
