@@ -12,7 +12,7 @@ to_tag = []
 @app.route('/')
 @app.route('/index')
 def home():
-    return render_template('homes.html')
+    return render_template('home.html')
 
 @app.route('/tagsongs',methods=["GET","POST"])
 def tag():
@@ -23,12 +23,15 @@ def tag():
 @app.route('/run', methods=["GET","POST"])
 def run():
 	global to_tag
-	all_songs = ""
 	index = 1
+
 	for song in to_tag:
 		Song_name = request.form["song_" + str(index)]
 		Artist_name = request.form["artist_" + str(index)]
-		run_main(song, Song_name, Artist_name)
+		Tagger.main_run(song, Song_name, Artist_name)
+		index += 1
+
+		# Tagger.main_run(song, Song_name, Artist_name)
 	return "Process complete."
 
 if __name__ == '__main__':
