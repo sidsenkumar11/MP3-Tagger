@@ -9,7 +9,6 @@ from shutil import move
 import pygn
 
 # Metadata read/write library
-import mutagen.id3
 from mutagen.id3 import ID3, APIC, error, TRCK, TIT2, TPE1, TALB, TDRC, TCON
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
@@ -38,38 +37,20 @@ def write_metadata_to_file(metadict, filename):
     mp3file['TrackNumber'] = metadict["track_number"]
     mp3file['Genre'] = metadict['genre']['1']['TEXT'] # TODO: Write multiple genres
     mp3file['Date'] = metadict["album_year"]
+    mp3file.save(filename, v2_version=3, v1=2)
 
     # Grab Album Art Image from online
     urllib.request.urlretrieve(metadict["album_art_url"], "cover.jpg")
+    imagedata = open("cover.jpg", 'rb').read()
+    pic = APIC(3, 'image/jpeg', 3, 'Front Cover', imagedata)
 
-    # Write Album Art Image
-    audio = MP3(filename, ID3=ID3)
-    if audio.tags is None:
-        audio.add_tags()
-    audio.tags.delete(filename, delete_v1=True, delete_v2=True)
-    audio.tags.add(
-        APIC(
-            encoding=3,
-            mime='image/jpeg',
-            type=3,
-            desc=u'Cover',
-            data=open("cover.jpg", 'rb').read()
-        )
-    )
-    audio.tags.add(
-        APIC(
-            encoding=3, # 3 is for utf-8
-            mime='image/jpeg', # image/jpeg or image/png
-            type=3, # 3 is for the cover image
-            desc=u'Cover',
-            data=open('example.png').read()
-        )
-    )
-    audio.save()
-    audio.add_picture(open("cover.jpg", 'rb').read())
+    # Save the artwork to the file
+    audio = MP3(filename)
+    audio.tags.add(pic)
     audio.save(filename, v2_version=3, v1=2)
-    mp3file.save()
-    # os.remove("cover.jpg")
+
+    # Remove the image from the directory
+    os.remove("cover.jpg")
 
 def change_file_name(metadata, song):
     os.rename(song, metadata['track_title'] + " - " + metadata['album_artist_name'] + ".mp3")
@@ -127,7 +108,6 @@ if __name__=='__main__':
             print("================================")
             read_metadata_from_file(song)
             change_file_name(song_metadata, song)
-
 
     # Sort into playlists
     # Possible options: 'Genre', 'Artist', 'Album', 'Date'
