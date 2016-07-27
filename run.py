@@ -4,6 +4,7 @@ from flask_wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 import os
+import Tagger
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dkjhskf98wy3jkmfedslm'
@@ -27,8 +28,8 @@ def run():
 	for song in to_tag:
 		Song_name = request.form["song_" + str(index)]
 		Artist_name = request.form["artist_" + str(index)]
-		all_songs = all_songs + Song_name + " " + Artist_name + "\n"
-	return all_songs
+		run_main(song, Song_name, Artist_name)
+	return "Process complete."
 
 if __name__ == '__main__':
     app.run(debug=True)

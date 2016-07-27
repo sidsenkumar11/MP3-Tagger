@@ -83,33 +83,37 @@ def read_metadata_from_file(filename):
     audio = MP3(filename, ID3=EasyID3)
     pp.pprint(audio)
 
-if __name__=='__main__':
+def main_run(song, track_name, artist_name):
+
+    song_metadata = get_song_metadata(track_name, artist_name)
+    write_metadata_to_file(song_metadata, song)
+    change_file_name(song_metadata, song)
 
     # Main Functionality
-    songs = read_files_in_current_directory()
-    for song in songs:
-        print("================================")
-        print("         METADATA BEFORE        ")
-        print("================================")
-        read_metadata_from_file(song)
+    # songs = read_files_in_current_directory()
+    # for song in songs:
+    #     print("================================")
+    #     print("         METADATA BEFORE        ")
+    #     print("================================")
+    #     read_metadata_from_file(song)
 
-        track_name = input(song + ": Name - ")
-        artist_name = input(song + ": Artist - ")
-        song_metadata = get_song_metadata(track_name, artist_name)
+    #     track_name = input(song + ": Name - ")
+    #     artist_name = input(song + ": Artist - ")
+    #     song_metadata = get_song_metadata(track_name, artist_name)
 
-        pp.pprint(song_metadata)
-        ok = input("Is this metadata ok? ")
+    #     pp.pprint(song_metadata)
+    #     ok = input("Is this metadata ok? ")
 
-        if (ok == 'Y'):
-            write_metadata_to_file(song_metadata, song)
+    #     if (ok == 'Y'):
+    #         write_metadata_to_file(song_metadata, song)
 
-            print("================================")
-            print("         METADATA AFTER         ")
-            print("================================")
-            read_metadata_from_file(song)
-            change_file_name(song_metadata, song)
+    #         print("================================")
+    #         print("         METADATA AFTER         ")
+    #         print("================================")
+    #         read_metadata_from_file(song)
+    #         change_file_name(song_metadata, song)
 
-    # Sort into playlists
-    # Possible options: 'Genre', 'Artist', 'Album', 'Date'
+    # # Sort into playlists
+    # # Possible options: 'Genre', 'Artist', 'Album', 'Date'
     # playlist_option = input("How would you like to sort your music into playlists?\nEnter Genre, Artist, Album, or Date: ")
     # generate_playlists(playlist_option)
