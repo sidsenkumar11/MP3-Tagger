@@ -9,6 +9,7 @@ import Tagger
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dkjhskf98wy3jkmfedslm'
 to_tag = []
+
 @app.route('/')
 @app.route('/index')
 def home():
@@ -20,6 +21,7 @@ def tag():
 	to_tag = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith(".mp3")]
 	
 	return render_template('tagsongs.html', songs = to_tag)
+
 @app.route('/run', methods=["GET","POST"])
 def run():
 	global to_tag
@@ -32,9 +34,13 @@ def run():
 		index += 1
 
 		# Tagger.main_run(song, Song_name, Artist_name)
-	return "Process complete."
+	return render_template('playlist.html')
+
+@app.route('/playlist', methods=["POST"])
+def playlist():
+	Tagger.generate_playlists(request.form["playlist_option"])
+	return "Process Completed."
+
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
