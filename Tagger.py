@@ -3,33 +3,27 @@ import json
 import sys
 import design
 import os
+import pprint as pp
+from shutil import move
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 import mutagen.id3
 from PyQt4 import QtCore, QtGui
-import pprint as pp
 
+# API keys
 clientID = '420737233-ABB8789B14C3A2BAE6730A0EEE59B3D6'
 userID = '94671866235528590-B0AC2AB3FE6629CD0B956F996F3D926A'
 
-# Rachel
-def read_files_in_current_directory(dir_name):
+def read_files_in_current_directory():
 
     # Return list of MP3 Files in current directory
-    return None
+    return [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith(".mp3")]
 
-# Sid
 def get_song_metadata(song_name, artist_name):
 
     # Query database and get song metadata as a dict
-    # How to query the dict can be seen here:
-    # https://github.com/cweichen/pygn
-    metadata = pygn.search(clientID=clientID, userID=userID, artist=artist_name, track=song_name)
-    # To see the metadata printed out, uncomment the line below
-    # print(json.dumps(result, sort_keys=True, indent=4))
-    return metadata
+    return pygn.search(clientID=clientID, userID=userID, artist=artist_name, track=song_name)
 
-# Daiven
 def write_metadata_to_file(metadict, filename):
 
     mp3file = MP3(filename, ID3=EasyID3)
@@ -41,16 +35,36 @@ def write_metadata_to_file(metadict, filename):
     mp3file['Date'] = metadict["album_year"]
     mp3file.save()
 
+def change_file_name(metadata, song):
+    os.rename(song, metadata['track_title'] + " - " + metadata['album_artist_name'] + ".mp3")
+
+def generate_playlists(playlist_specifier):
+
+    # Read in MP3 files in current directory
+    songs = read_files_in_current_directory()
+
+    for filename in songs:
+        audio = MP3(filename, ID3=EasyID3)
+
+        # Read proper metadata
+        try:
+            specifier = audio[playlist_specifier][0] # audio is a dict of lists
+        except:
+            specifier = "Unknown"
+
+        # Create directory if it doesn't exist
+        if not os.path.exists(specifier):
+            os.makedirs(specifier)
+
+        # The folder exists in the current directory.
+        # Move the MP3 file into that folder.
+        source = os.path.abspath(filename)
+        destination = os.getcwd() + "/" + specifier + "/" + filename
+        move(source, destination)
+
 def read_metadata_from_file(filename):
     audio = MP3(filename, ID3=EasyID3)
     pp.pprint(audio)
-
-# Whoever
-def generate_playlists(option):
-
-    # Put each song into folders based on the playlist option
-    # Doesn't need to return anything
-    pass # Remove this line when the method is implemented
 
 class App(QtGui.QMainWindow, design.Ui_MainWindow):
     def __init__(self, parent=None):
@@ -73,6 +87,17 @@ if __name__=='__main__':
     # form = App()
     # form.show()
     # app.exec_()
-    # song_metadata = get_song_metadata("NYC", 'Kevin Rudolph')
-    # write_metadata_to_file(song_metadata, "test.mp3")
-    read_metadata_from_file("test.mp3")
+
+    songs = read_files_in_current_directory()
+    for song in songs:
+        read_metadata_from_file(song)
+        track_name = input(song + ": Name - ")
+        artist_name = input(song + ": Artist - ")
+
+        song_metadata = get_song_metadata(track_name, artist_name)
+        write_metadata_to_file(song_metadata, song)
+        change_file_name(song_metadata, song)
+
+    # Possible options: 'Genre', 'Artist', 'Album', 'Date'
+    playlist_option = input("How would you like to sort your music into playlists?\nEnter Genre, Artist, Album, or Date: ")
+    generate_playlists(playlist_option)
