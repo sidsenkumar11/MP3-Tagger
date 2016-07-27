@@ -1,14 +1,18 @@
-import pygn
-import json
+# Python system libraries
 import sys
-import design
 import os
+import urllib.request
 import pprint as pp
 from shutil import move
-from mutagen.mp3 import MP3
-from mutagen.easyid3 import EasyID3
+
+# Music database API
+import pygn
+
+# Metadata read/write library
 import mutagen.id3
-from PyQt4 import QtCore, QtGui
+from mutagen.id3 import ID3, APIC, error, TRCK, TIT2, TPE1, TALB, TDRC, TCON
+from mutagen.easyid3 import EasyID3
+from mutagen.mp3 import MP3
 
 # API keys
 clientID = '420737233-ABB8789B14C3A2BAE6730A0EEE59B3D6'
@@ -25,6 +29,8 @@ def get_song_metadata(song_name, artist_name):
     return pygn.search(clientID=clientID, userID=userID, artist=artist_name, track=song_name)
 
 def write_metadata_to_file(metadict, filename):
+
+    # Write tags to MP3 file
     mp3file = MP3(filename, ID3=EasyID3)
     mp3file['Title'] = metadict["track_title"]
     mp3file['Artist']= metadict["album_artist_name"]
@@ -32,7 +38,38 @@ def write_metadata_to_file(metadict, filename):
     mp3file['TrackNumber'] = metadict["track_number"]
     mp3file['Genre'] = metadict['genre']['1']['TEXT'] # TODO: Write multiple genres
     mp3file['Date'] = metadict["album_year"]
+
+    # Grab Album Art Image from online
+    urllib.request.urlretrieve(metadict["album_art_url"], "cover.jpg")
+
+    # Write Album Art Image
+    audio = MP3(filename, ID3=ID3)
+    if audio.tags is None:
+        audio.add_tags()
+    audio.tags.delete(filename, delete_v1=True, delete_v2=True)
+    audio.tags.add(
+        APIC(
+            encoding=3,
+            mime='image/jpeg',
+            type=3,
+            desc=u'Cover',
+            data=open("cover.jpg", 'rb').read()
+        )
+    )
+    audio.tags.add(
+        APIC(
+            encoding=3, # 3 is for utf-8
+            mime='image/jpeg', # image/jpeg or image/png
+            type=3, # 3 is for the cover image
+            desc=u'Cover',
+            data=open('example.png').read()
+        )
+    )
+    audio.save()
+    audio.add_picture(open("cover.jpg", 'rb').read())
+    audio.save(filename, v2_version=3, v1=2)
     mp3file.save()
+    # os.remove("cover.jpg")
 
 def change_file_name(metadata, song):
     os.rename(song, metadata['track_title'] + " - " + metadata['album_artist_name'] + ".mp3")
@@ -65,57 +102,34 @@ def read_metadata_from_file(filename):
     audio = MP3(filename, ID3=EasyID3)
     pp.pprint(audio)
 
-class App(QtGui.QMainWindow, design.Ui_MainWindow):
-    def __init__(self, parent=None):
-        super(App, self).__init__(parent)
-        self.setupUi(self)
-        self.select_dir.clicked.connect(self.browse_folder)
-    def browse_folder(self):
-        self.dir_list.clear()
-        directory = QtGui.QFileDialog.getExistingDirectory(self,
-        	"Pick a folder")
-        if directory:
-            for file_name in os.listdir(directory):
-                self.popup(file_name)
-            #call gen_playlist
-    def popup(self,fname):
-        #popup appears some way somehow idk someone help
-        #text: "Enter information for <fname>"
-        #enter s = song information in textbox
-        #enter a = artist information in textbox
-        #on click "Tag Song", line below writes metadata
-        #write_metadata_to_file(get_song_metadata(s, a), fname)
-            #should we have a popup for if it can't find the info?
-        #after writing, add filename to list of tagged songs w the line below:
-        #<listWidget>.addItem(fname)
-    def gen_playlist(self):
-        choice = QtGui.QMessageBox.question(self, 'Generate playlist?',
-                                            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-        if choice == QtGui.QMessageBox.Yes:
-            sys.exit()
-        else:
-            #select attribute to generate playlist by
-            pass
 if __name__=='__main__':
 
     # Main Functionality
     songs = read_files_in_current_directory()
     for song in songs:
+        print("================================")
+        print("         METADATA BEFORE        ")
+        print("================================")
         read_metadata_from_file(song)
+
         track_name = input(song + ": Name - ")
         artist_name = input(song + ": Artist - ")
-
         song_metadata = get_song_metadata(track_name, artist_name)
-        write_metadata_to_file(song_metadata, song)
-        change_file_name(song_metadata, song)
 
+        pp.pprint(song_metadata)
+        ok = input("Is this metadata ok? ")
+
+        if (ok == 'Y'):
+            write_metadata_to_file(song_metadata, song)
+
+            print("================================")
+            print("         METADATA AFTER         ")
+            print("================================")
+            read_metadata_from_file(song)
+            change_file_name(song_metadata, song)
+
+
+    # Sort into playlists
     # Possible options: 'Genre', 'Artist', 'Album', 'Date'
-    playlist_option = input("How would you like to sort your music into playlists?\nEnter Genre, Artist, Album, or Date: ")
-    generate_playlists(playlist_option)
-
-    # GUI Work
-    # app = QtGui.QApplication(sys.argv)
-    # form = App()
-    # form.show()
-    # app.exec_()
-
+    # playlist_option = input("How would you like to sort your music into playlists?\nEnter Genre, Artist, Album, or Date: ")
+    # generate_playlists(playlist_option)
