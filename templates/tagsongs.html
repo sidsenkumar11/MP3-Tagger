@@ -2,30 +2,30 @@
 {% block title %}Tag Songs{% endblock %}
 
 {% block content %}
-<head>
-    <title>Tag Songs</title>
-
-</head>
-<body>
     <table>
+      <thead>
       <tr>
           <th>File name</th><th>Enter Song</th><th>Enter Artist</th>
       </tr>
+    </thead>
+    <tbody>
       {% for file in songs %}
         <tr>
-            <td>{{file}}</td>
-<form method = "post" action="/run">
+            <td>{{ file }}</td>
+          <form method = "post" action="/run">
             <td>Song Name: <input type="text" name="song_{{ loop.index }}" value=""><br></td>
             <td>Artist: <input type="text" name="artist_{{ loop.index }}" value=""><br></td>
-
-
-  
         </tr>
       {% endfor %}
-      <input type="submit" value="Submit">      
-   </form>  
+    </tbody>
     </table>
-</body>
+
+    <div class="row">
+  <div class="col-md-4 center-block">
+      <input class="center" type="submit" value="Submit">      
+
+</div>
+</div>
+       </form>  
+
 {% endblock %}
-
-

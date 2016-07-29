@@ -39,7 +39,7 @@ def run():
 @app.route('/playlist', methods=["POST"])
 def playlist():
 	Tagger.generate_playlists(request.form["playlist_option"])
-	return "Process Completed."
+	return render_template('home.html', message="Process completed!")
 
 
 if __name__ == '__main__':
